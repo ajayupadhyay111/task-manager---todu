@@ -22,6 +22,10 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
   });
   if (!c) notFound();
 
+  type Proj = (typeof c.projects)[number];
+  type TaskItem = (typeof c.tasks)[number];
+  type Invoice = (typeof c.invoices)[number];
+  type MeetingItem = (typeof c.meetings)[number];
   const tags = safeJson<string[]>(c.tags, []);
 
   return (
@@ -63,7 +67,7 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
             <CardHeader><CardTitle>Projects</CardTitle><span className="text-[11px] text-white/40">{c.projects.length}</span></CardHeader>
             <CardBody className="space-y-2">
               {c.projects.length === 0 && <div className="py-6 text-center text-sm text-white/40">No projects yet.</div>}
-              {c.projects.map(p => (
+              {c.projects.map((p: Proj) => (
                 <Link key={p.id} href={`/projects/${p.id}`} className="block rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 transition hover:bg-white/[0.04]">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
@@ -82,7 +86,7 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
             <CardHeader><CardTitle>Recent tasks</CardTitle></CardHeader>
             <CardBody className="space-y-1.5">
               {c.tasks.length === 0 && <div className="py-6 text-center text-sm text-white/40">No tasks yet.</div>}
-              {c.tasks.map(t => (
+              {c.tasks.map((t: TaskItem) => (
                 <TaskRow key={t.id} task={t} />
               ))}
             </CardBody>
@@ -103,7 +107,7 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
             <CardHeader><CardTitle>Invoices</CardTitle><span className="text-[11px] text-white/40">{c.invoices.length}</span></CardHeader>
             <CardBody className="space-y-2">
               {c.invoices.length === 0 && <div className="py-4 text-center text-sm text-white/40">No invoices.</div>}
-              {c.invoices.map(inv => (
+              {c.invoices.map((inv: Invoice) => (
                 <div key={inv.id} className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
                   <div>
                     <div className="text-sm font-semibold">#{inv.number}</div>
@@ -125,7 +129,7 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
             <CardHeader><CardTitle>Meetings</CardTitle></CardHeader>
             <CardBody className="space-y-2">
               {c.meetings.length === 0 && <div className="py-4 text-center text-sm text-white/40">No meetings scheduled.</div>}
-              {c.meetings.map(m => (
+              {c.meetings.map((m: MeetingItem) => (
                 <div key={m.id} className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
                   <div className="text-sm font-semibold">{m.title}</div>
                   <div className="text-[11px] text-white/40">{new Date(m.startsAt).toLocaleString()}</div>

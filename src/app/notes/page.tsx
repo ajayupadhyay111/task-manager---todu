@@ -8,5 +8,6 @@ export default async function NotesPage() {
     orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
     take: 200,
   });
-  return <NotesClient initial={notes.map(n => ({ ...n, updatedAt: n.updatedAt.toISOString() }))} />;
+  type NoteRow = (typeof notes)[number];
+  return <NotesClient initial={notes.map((n: NoteRow) => ({ ...n, updatedAt: n.updatedAt.toISOString() }))} />;
 }

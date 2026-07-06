@@ -29,7 +29,7 @@ export default async function ClientsPage() {
         <EmptyState icon={<Users className="h-6 w-6" />} title="No clients yet" description="Press C to add your first client." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {clients.map(c => {
+          {clients.map((c: (typeof clients)[number]) => {
             const tags = safeJson<string[]>(c.tags, []);
             return (
               <Link key={c.id} href={`/clients/${c.id}`}>

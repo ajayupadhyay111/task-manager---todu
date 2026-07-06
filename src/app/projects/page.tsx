@@ -26,7 +26,7 @@ export default async function ProjectsPage() {
         <EmptyState icon={<FolderKanban className="h-6 w-6" />} title="No projects yet" description="Press P to create one." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map(p => (
+          {projects.map((p: (typeof projects)[number]) => (
             <Link key={p.id} href={`/projects/${p.id}`}>
               <Card className="group relative overflow-hidden p-5 transition hover:translate-y-[-2px] hover:border-white/[0.12]">
                 <div className="absolute right-0 top-0 h-24 w-24 rounded-full opacity-30 blur-2xl" style={{ background: p.color }} />

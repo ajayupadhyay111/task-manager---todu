@@ -21,9 +21,11 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
   });
   if (!p) notFound();
 
+  type TaskItem = (typeof p.tasks)[number];
+  type NoteItem = (typeof p.projectNotes)[number];
   const links = safeJson<{ label: string; url: string }[]>(p.links, []);
-  const openTasks = p.tasks.filter(t => t.status !== "completed" && t.status !== "archived");
-  const doneTasks = p.tasks.filter(t => t.status === "completed");
+  const openTasks = p.tasks.filter((t: TaskItem) => t.status !== "completed" && t.status !== "archived");
+  const doneTasks = p.tasks.filter((t: TaskItem) => t.status === "completed");
 
   return (
     <div className="mx-auto max-w-[1300px] space-y-6">
@@ -64,7 +66,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
             <CardHeader><CardTitle>Open tasks</CardTitle><span className="text-[11px] text-white/40">{openTasks.length}</span></CardHeader>
             <CardBody className="space-y-1.5">
               {openTasks.length === 0 && <div className="py-6 text-center text-sm text-white/40">Nothing open.</div>}
-              {openTasks.map(t => <TaskRow key={t.id} task={t} />)}
+              {openTasks.map((t: TaskItem) => <TaskRow key={t.id} task={t} />)}
             </CardBody>
           </Card>
 
@@ -72,7 +74,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
             <Card>
               <CardHeader><CardTitle>Completed</CardTitle><span className="text-[11px] text-white/40">{doneTasks.length}</span></CardHeader>
               <CardBody className="space-y-1.5">
-                {doneTasks.slice(0, 20).map(t => <TaskRow key={t.id} task={t} compact />)}
+                {doneTasks.slice(0, 20).map((t: TaskItem) => <TaskRow key={t.id} task={t} compact />)}
               </CardBody>
             </Card>
           )}
@@ -111,7 +113,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
             <Card>
               <CardHeader><CardTitle>Related notes</CardTitle></CardHeader>
               <CardBody className="space-y-2">
-                {p.projectNotes.map(n => (
+                {p.projectNotes.map((n: NoteItem) => (
                   <Link key={n.id} href={`/notes/${n.id}`} className="block rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-sm">
                     <div className="truncate font-medium">{n.title}</div>
                     <div className="text-[11px] text-white/40">{fmtRelative(n.updatedAt)}</div>

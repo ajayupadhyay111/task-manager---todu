@@ -11,10 +11,12 @@ export default async function CalendarPage() {
       project: { select: { id: true, name: true, color: true } },
     },
   });
-  return <CalendarClient initial={tasks.map(t => ({
+  type Row = (typeof tasks)[number];
+  const initial = tasks.map((t: Row) => ({
     id: t.id, title: t.title, status: t.status, priority: t.priority,
     dueDate: t.dueDate!, dueTime: t.dueTime, color: t.color,
     clientName: t.client?.name, projectName: t.project?.name,
     projectColor: t.project?.color, clientColor: t.client?.color,
-  }))} />;
+  }));
+  return <CalendarClient initial={initial} />;
 }
