@@ -1,7 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardBody } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -15,10 +14,16 @@ type Item = {
 type View = "month" | "week" | "day" | "agenda";
 
 export function CalendarClient({ initial }: { initial: Item[] }) {
-  const [view, setView] = useState<View>("month");
+  const [view, setView] = useState<View>("agenda");
   const [cursor, setCursor] = useState(() => {
     const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate());
   });
+
+  // Default to Agenda on mobile, Month on desktop (client-only)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setView(window.matchMedia("(min-width: 768px)").matches ? "month" : "agenda");
+  }, []);
 
   const items = useMemo(() => initial.map(i => ({ ...i, _d: new Date(i.dueDate) })), [initial]);
 
@@ -42,17 +47,17 @@ export function CalendarClient({ initial }: { initial: Item[] }) {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-4">
-      <div className="glass card-shadow flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3">
-        <div className="flex items-center gap-2">
-          <button onClick={() => shift(-1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/70 hover:bg-white/[0.05] hover:text-white"><ChevronLeft className="h-4 w-4" /></button>
+      <div className="glass card-shadow flex flex-col gap-2 rounded-2xl p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-3">
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => shift(-1)} aria-label="Previous" className="grid h-9 w-9 place-items-center rounded-xl text-white/70 hover:bg-white/[0.05] hover:text-white"><ChevronLeft className="h-4 w-4" /></button>
           <button onClick={() => setCursor(new Date())} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-xs">Today</button>
-          <button onClick={() => shift(1)} className="grid h-9 w-9 place-items-center rounded-xl text-white/70 hover:bg-white/[0.05] hover:text-white"><ChevronRight className="h-4 w-4" /></button>
-          <div className="ml-2 text-sm font-semibold">{title}</div>
+          <button onClick={() => shift(1)} aria-label="Next" className="grid h-9 w-9 place-items-center rounded-xl text-white/70 hover:bg-white/[0.05] hover:text-white"><ChevronRight className="h-4 w-4" /></button>
+          <div className="ml-2 truncate text-sm font-semibold">{title}</div>
         </div>
-        <div className="flex rounded-xl border border-white/[0.06] p-0.5">
+        <div className="-mx-1 flex overflow-x-auto rounded-xl border border-white/[0.06] p-0.5 sm:mx-0">
           {(["month","week","day","agenda"] as View[]).map(v => (
             <button key={v} onClick={() => setView(v)}
-              className={cn("rounded-lg px-3 py-1.5 text-xs capitalize transition", view === v ? "bg-white/[0.08] text-white" : "text-white/50 hover:text-white")}>
+              className={cn("shrink-0 rounded-lg px-3 py-1.5 text-xs capitalize transition", view === v ? "bg-white/[0.08] text-white" : "text-white/50 hover:text-white")}>
               {v}
             </button>
           ))}
@@ -79,12 +84,18 @@ function MonthView({ cursor, items }: { cursor: Date; items: (Item & { _d: Date 
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(it);
   }
-  const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const DAYS = ["S","M","T","W","T","F","S"];
+  const DAYS_LONG = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   return (
     <Card>
-      <CardBody className="p-2">
+      <CardBody className="p-1.5 sm:p-2">
         <div className="grid grid-cols-7 gap-1 pb-2">
-          {DAYS.map(d => <div key={d} className="px-2 py-1 text-[11px] uppercase tracking-widest text-white/40">{d}</div>)}
+          {DAYS.map((d, i) => (
+            <div key={i} className="px-1 py-1 text-center text-[10px] uppercase tracking-widest text-white/40 sm:text-left sm:px-2 sm:text-[11px]">
+              <span className="sm:hidden">{d}</span>
+              <span className="hidden sm:inline">{DAYS_LONG[i]}</span>
+            </div>
+          ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
           {cells.map((d, i) => {
@@ -94,15 +105,24 @@ function MonthView({ cursor, items }: { cursor: Date; items: (Item & { _d: Date 
             return (
               <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: (i % 7) * 0.01 }}
                 className={cn(
-                  "min-h-[100px] rounded-xl border p-2",
+                  "aspect-square rounded-lg border p-1 sm:aspect-auto sm:min-h-[100px] sm:rounded-xl sm:p-2",
                   inMonth ? "border-white/[0.05] bg-white/[0.02]" : "border-white/[0.03] bg-white/[0.005] text-white/30",
                   isToday && "ring-1 ring-brand-500/40 border-brand-500/40",
                 )}>
                 <div className="flex items-center justify-between">
-                  <div className={cn("text-[12px] font-medium", isToday && "text-brand-300")}>{d.getDate()}</div>
-                  {list.length > 0 && <div className="rounded-full bg-white/[0.05] px-1.5 text-[10px] text-white/60">{list.length}</div>}
+                  <div className={cn("text-[11px] font-semibold sm:text-[12px]", isToday && "text-brand-300")}>{d.getDate()}</div>
+                  {list.length > 0 && (
+                    <div className="hidden rounded-full bg-white/[0.05] px-1.5 text-[10px] text-white/60 sm:block">{list.length}</div>
+                  )}
                 </div>
-                <div className="mt-1 space-y-1">
+                {/* Mobile: just show dots */}
+                <div className="mt-1 flex flex-wrap gap-0.5 sm:hidden">
+                  {list.slice(0, 4).map(x => (
+                    <span key={x.id} className="h-1 w-1 rounded-full" style={{ background: x.projectColor ?? "#4F7CFF" }} />
+                  ))}
+                </div>
+                {/* Desktop: full pills */}
+                <div className="mt-1 hidden space-y-1 sm:block">
                   {list.slice(0, 3).map(x => (
                     <div key={x.id} className="line-clamp-1 rounded-md px-1.5 py-0.5 text-[11px]"
                       style={{ background: `${x.projectColor ?? "#4F7CFF"}22`, color: "#fff" }}>

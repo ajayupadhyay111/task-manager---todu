@@ -42,14 +42,6 @@ export function Topbar() {
           Quick add
         </button>
         <button
-          onClick={() => setQuickAdd(true, "task")}
-          className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent text-white shadow-lg shadow-brand-500/25 sm:hidden"
-          aria-label="Quick add"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-
-        <button
           className="relative grid h-9 w-9 place-items-center rounded-xl text-white/70 transition hover:bg-white/[0.05] hover:text-white"
           aria-label="Notifications"
         >
