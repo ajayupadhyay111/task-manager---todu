@@ -1,0 +1,21 @@
+{
+  "name": "Todu — Productivity OS",
+  "short_name": "Todu",
+  "description": "A premium productivity OS for freelance developers. Never forget a task.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0B0F",
+  "theme_color": "#0A0B0F",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Today", "short_name": "Today", "url": "/today" },
+    { "name": "Inbox", "short_name": "Inbox", "url": "/inbox" },
+    { "name": "Calendar", "short_name": "Calendar", "url": "/calendar" }
+  ]
+}

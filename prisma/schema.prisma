@@ -1,0 +1,217 @@
+// Task Manager — full domain model
+// SQLite for zero-config local dev
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Client {
+  id           String    @id @default(cuid())
+  name         String
+  company      String?
+  email        String?
+  phone        String?
+  avatar       String?   // emoji or URL
+  color        String    @default("#4F7CFF")
+  priority     String    @default("medium") // critical|high|medium|low
+  status       String    @default("active") // active|paused|archived
+  paymentStatus String   @default("current") // current|overdue|paid
+  budget       Float?
+  website      String?
+  notes        String?
+  meetingNotes String?
+  tags         String    @default("[]") // JSON array
+  pinned       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  projects  Project[]
+  tasks     Task[]
+  clientNotes Note[]
+  invoices  Invoice[]
+  meetings  Meeting[]
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  status      String    @default("active") // planning|active|paused|completed|archived
+  priority    String    @default("medium")
+  deadline    DateTime?
+  progress    Int       @default(0) // 0-100
+  color       String    @default("#4F7CFF")
+  icon        String?
+  links       String    @default("[]") // JSON array of {label, url}
+  notes       String?
+  pinned      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  clientId  String?
+  client    Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  tasks      Task[]
+  milestones Milestone[]
+  projectNotes Note[]
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  title     String
+  done      Boolean  @default(false)
+  dueDate   DateTime?
+  order     Int      @default(0)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  status        String    @default("inbox") // inbox|planned|today|tomorrow|in_progress|waiting|blocked|completed|archived
+  priority      String    @default("medium") // critical|high|medium|low
+  estimatedMin  Int?
+  actualMin     Int       @default(0)
+  dueDate       DateTime?
+  dueTime       String?   // HH:MM
+  scheduledFor  DateTime? // for time blocking on Today
+  reminder      DateTime?
+  repeat        String?   // daily|weekly|monthly|yearly|null
+  labels        String    @default("[]") // JSON array of strings
+  color         String?
+  emoji         String?
+  order         Int       @default(0)
+  pinned        Boolean   @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  parentId  String?
+  parent    Task?    @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks  Task[]   @relation("Subtasks")
+
+  checklist   ChecklistItem[]
+  comments    Comment[]
+  attachments Attachment[]
+
+  dependsOnRelations DependsOn[] @relation("Depender")
+  blockingRelations  DependsOn[] @relation("Dependee")
+}
+
+model ChecklistItem {
+  id     String  @id @default(cuid())
+  text   String
+  done   Boolean @default(false)
+  order  Int     @default(0)
+  taskId String
+  task   Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  size      Int?
+  mime      String?
+  createdAt DateTime @default(now())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model DependsOn {
+  dependerId String
+  depender   Task   @relation("Depender", fields: [dependerId], references: [id], onDelete: Cascade)
+  dependeeId String
+  dependee   Task   @relation("Dependee", fields: [dependeeId], references: [id], onDelete: Cascade)
+
+  @@id([dependerId, dependeeId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @default("")
+  kind      String   @default("note") // note|meeting|journal|sticky
+  color     String?  // for sticky notes
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  number    String
+  amount    Float
+  status    String   @default("draft") // draft|sent|paid|overdue
+  issuedAt  DateTime @default(now())
+  dueAt     DateTime?
+  paidAt    DateTime?
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Meeting {
+  id        String   @id @default(cuid())
+  title     String
+  startsAt  DateTime
+  endsAt    DateTime?
+  location  String?
+  notes     String?
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  kind      String   // task.created|task.completed|task.updated|client.created|project.created|note.edited|...
+  entity    String   // task|client|project|note
+  entityId  String?
+  title     String
+  meta      String?  // JSON string
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id             String  @id @default("singleton")
+  theme          String  @default("dark")
+  weekStartsOn   Int     @default(1) // 0=Sun, 1=Mon
+  pomodoroFocus  Int     @default(25)
+  pomodoroBreak  Int     @default(5)
+  displayName    String  @default("Devima")
+  email          String?
+  timezone       String  @default("UTC")
+}
+
+model FocusSession {
+  id         String    @id @default(cuid())
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+  minutes    Int       @default(0)
+  taskId     String?
+  kind       String    @default("focus") // focus|break
+}
