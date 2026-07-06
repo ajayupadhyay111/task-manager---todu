@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { TaskRow, type TaskRowData } from "@/components/task/task-row";
 import { Input } from "@/components/ui/input";
@@ -11,18 +11,25 @@ export function InboxClient({ initial }: { initial: TaskRowData[] }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+  const lockRef = useRef(false);
 
   const add = async () => {
-    if (!value.trim()) return;
-    const res = await fetch("/api/tasks", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title: value.trim(), status: "inbox" }),
-    });
-    const j = await res.json();
-    setItems(p => [j.task, ...p]);
-    setValue("");
-    toast.success("Added to inbox");
-    router.refresh();
+    if (!value.trim() || lockRef.current) return;
+    lockRef.current = true; setBusy(true);
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: value.trim(), status: "inbox" }),
+      });
+      const j = await res.json();
+      setItems(p => [j.task, ...p]);
+      setValue("");
+      toast.success("Added to inbox");
+      router.refresh();
+    } finally {
+      setTimeout(() => { lockRef.current = false; setBusy(false); }, 300);
+    }
   };
 
   return (
@@ -40,10 +47,11 @@ export function InboxClient({ initial }: { initial: TaskRowData[] }) {
         />
         <button
           onClick={add}
-          className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent text-white"
-          aria-label="Add"
+          disabled={busy || !value.trim()}
+          aria-label="Add" aria-busy={busy}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent text-white transition disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
         </button>
       </div>
 

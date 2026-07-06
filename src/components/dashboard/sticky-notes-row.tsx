@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,17 +10,27 @@ const COLORS = ["#FBBF24", "#F87171", "#34D399", "#A78BFA", "#4F7CFF", "#F472B6"
 
 export function StickyNotesRow({ initial }: { initial: Note[] }) {
   const router = useRouter();
-  const [notes, setNotes] = useState(initial);
+  const [notes, setNotes] = useState<Note[]>(initial);
+  const [creating, setCreating] = useState(false);
+  const lockRef = useRef(false);
 
   const addSticky = async () => {
-    const color = COLORS[notes.length % COLORS.length];
-    const res = await fetch("/api/notes", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title: "Note", body: "", kind: "sticky", color }),
-    });
-    const j = await res.json();
-    setNotes(prev => [j.note, ...prev]);
-    router.refresh();
+    if (lockRef.current || creating) return;
+    lockRef.current = true;
+    setCreating(true);
+    try {
+      const color = COLORS[notes.length % COLORS.length];
+      const res = await fetch("/api/notes", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Note", body: "", kind: "sticky", color }),
+      });
+      const j = await res.json();
+      setNotes((prev) => [j.note, ...prev]);
+      router.refresh();
+    } finally {
+      // Cooldown to prevent rapid double-taps (mobile bounce, keypress + click)
+      setTimeout(() => { lockRef.current = false; setCreating(false); }, 500);
+    }
   };
 
   const save = async (n: Note) => {
@@ -41,22 +51,28 @@ export function StickyNotesRow({ initial }: { initial: Note[] }) {
           >
             <input
               defaultValue={n.title}
-              onBlur={e => { const v = e.target.value; setNotes(p => p.map(x => x.id === n.id ? { ...x, title: v } : x)); save({ ...n, title: v }); }}
+              onBlur={e => { const v = e.target.value; if (v === n.title) return; setNotes(p => p.map(x => x.id === n.id ? { ...x, title: v } : x)); save({ ...n, title: v }); }}
               className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/40"
               placeholder="Title"
             />
             <textarea
               defaultValue={n.body}
-              onBlur={e => { const v = e.target.value; setNotes(p => p.map(x => x.id === n.id ? { ...x, body: v } : x)); save({ ...n, body: v }); }}
+              onBlur={e => { const v = e.target.value; if (v === n.body) return; setNotes(p => p.map(x => x.id === n.id ? { ...x, body: v } : x)); save({ ...n, body: v }); }}
               className="mt-1 h-20 w-full resize-none bg-transparent text-[13px] text-white/80 outline-none placeholder:text-white/40"
               placeholder="Write it down…"
             />
           </motion.div>
         );
       })}
-      <button onClick={addSticky} className="grid h-full min-h-[120px] place-items-center rounded-2xl border border-dashed border-white/[0.08] text-white/40 transition hover:border-white/[0.2] hover:text-white">
+      <button
+        onClick={addSticky}
+        disabled={creating}
+        aria-busy={creating}
+        className="grid h-full min-h-[120px] place-items-center rounded-2xl border border-dashed border-white/[0.08] text-white/40 transition hover:border-white/[0.2] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+      >
         <div className="flex flex-col items-center gap-1 text-xs">
-          <Plus className="h-4 w-4" /> New sticky
+          <Plus className={`h-4 w-4 ${creating ? "animate-spin" : ""}`} />
+          {creating ? "Creating…" : "New sticky"}
         </div>
       </button>
     </div>

@@ -109,32 +109,49 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/[0.06] p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-white/[0.06] p-4 sm:p-6 md:p-8">
         <div className="pointer-events-none absolute inset-0 opacity-40">
-          <div className="absolute -left-20 -top-24 h-64 w-64 rounded-full bg-brand-500/30 blur-3xl" />
-          <div className="absolute -right-24 -top-10 h-72 w-72 rounded-full bg-accent/25 blur-3xl" />
+          <div className="absolute -left-20 -top-24 h-56 w-56 rounded-full bg-brand-500/30 blur-3xl sm:h-64 sm:w-64" />
+          <div className="absolute -right-20 -top-10 h-56 w-56 rounded-full bg-accent/25 blur-3xl sm:h-72 sm:w-72" />
           <div className="grid-bg absolute inset-0 opacity-20" />
         </div>
-        <div className="relative flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-white/40">{dateLabel}</div>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-              {greeting()}, <span className="gradient-brand">Devima.</span>
-            </h1>
-            <p className="mt-2 max-w-lg text-sm text-white/50">
-              You have <span className="font-medium text-white">{d.today.length}</span> tasks focused for today
-              {d.overdue.length > 0 && <> and <span className="font-medium text-red-300">{d.overdue.length}</span> overdue</>}.
-              Let&apos;s make it a great one.
-            </p>
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start justify-between gap-3 md:block">
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] uppercase tracking-widest text-white/40">{dateLabel}</div>
+              <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight text-white sm:text-3xl md:text-4xl">
+                {greeting()},
+                <br className="sm:hidden" />
+                <span className="gradient-brand"> Devima.</span>
+              </h1>
+              <p className="mt-2 max-w-lg text-[13px] text-white/60 sm:text-sm">
+                You have <span className="font-medium text-white">{d.today.length}</span> for today
+                {d.overdue.length > 0 && <>, <span className="font-medium text-red-300">{d.overdue.length}</span> overdue</>}.
+              </p>
+            </div>
+            {/* Mobile-only compact ring */}
+            <div className="shrink-0 md:hidden">
+              <ProgressRing value={d.stats.completionPct} size={72} stroke={7} label="Today" />
+            </div>
           </div>
-          <div className="flex items-center gap-6">
+
+          {/* Desktop ring + stats */}
+          <div className="hidden items-center gap-4 md:flex">
             <ProgressRing value={d.stats.completionPct} label="Today" />
-            <div className="hidden gap-4 md:flex">
+            <div className="hidden gap-3 md:flex">
               <Stat label="Active" value={d.stats.activeTasksCount} />
               <Stat label="Done today" value={d.stats.completedToday} />
               <Stat label="This week" value={d.stats.completedThisWeek} />
               <Stat label="Focus min" value={d.stats.focusMinutes} />
             </div>
+          </div>
+
+          {/* Mobile KPI strip */}
+          <div className="grid grid-cols-4 gap-2 md:hidden">
+            <MiniStat label="Active" value={d.stats.activeTasksCount} />
+            <MiniStat label="Done" value={d.stats.completedToday} />
+            <MiniStat label="Week" value={d.stats.completedThisWeek} />
+            <MiniStat label="Focus" value={`${d.stats.focusMinutes}m`} />
           </div>
         </div>
       </div>

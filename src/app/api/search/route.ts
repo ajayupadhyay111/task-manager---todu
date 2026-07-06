@@ -7,10 +7,11 @@ export async function GET(req: NextRequest) {
   const q = (new URL(req.url).searchParams.get("q") ?? "").trim();
   if (!q) return NextResponse.json({ tasks: [], clients: [], projects: [], notes: [] });
 
-  const tasksP = db.task.findMany({ where: { OR: [{ title: { contains: q } }, { description: { contains: q } }] }, take: 10 });
-  const clientsP = db.client.findMany({ where: { OR: [{ name: { contains: q } }, { company: { contains: q } }] }, take: 8 });
-  const projectsP = db.project.findMany({ where: { OR: [{ name: { contains: q } }, { description: { contains: q } }] }, take: 8 });
-  const notesP = db.note.findMany({ where: { OR: [{ title: { contains: q } }, { body: { contains: q } }] }, take: 8 });
+  const ic = "insensitive" as const;
+  const tasksP = db.task.findMany({ where: { OR: [{ title: { contains: q, mode: ic } }, { description: { contains: q, mode: ic } }] }, take: 10 });
+  const clientsP = db.client.findMany({ where: { OR: [{ name: { contains: q, mode: ic } }, { company: { contains: q, mode: ic } }] }, take: 8 });
+  const projectsP = db.project.findMany({ where: { OR: [{ name: { contains: q, mode: ic } }, { description: { contains: q, mode: ic } }] }, take: 8 });
+  const notesP = db.note.findMany({ where: { OR: [{ title: { contains: q, mode: ic } }, { body: { contains: q, mode: ic } }] }, take: 8 });
   const tasks = await tasksP;
   const clients = await clientsP;
   const projects = await projectsP;

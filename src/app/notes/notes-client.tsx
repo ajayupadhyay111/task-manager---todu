@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty";
 import { NotebookPen, Plus, Search } from "lucide-react";
@@ -36,15 +36,24 @@ export function NotesClient({ initial }: { initial: Note[] }) {
 
   const current = notes.find(n => n.id === selected) ?? null;
 
+  const creatingRef = useRef(false);
+  const [creating, setCreating] = useState(false);
   const create = async () => {
-    const res = await fetch("/api/notes", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title: "Untitled", body: "", kind: kind || "note" }),
-    });
-    const j = await res.json();
-    setNotes(p => [{ ...j.note, updatedAt: j.note.updatedAt }, ...p]);
-    setSelected(j.note.id);
-    router.refresh();
+    if (creatingRef.current) return;
+    creatingRef.current = true;
+    setCreating(true);
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Untitled", body: "", kind: kind || "note" }),
+      });
+      const j = await res.json();
+      setNotes(p => [{ ...j.note, updatedAt: j.note.updatedAt }, ...p]);
+      setSelected(j.note.id);
+      router.refresh();
+    } finally {
+      setTimeout(() => { creatingRef.current = false; setCreating(false); }, 500);
+    }
   };
 
   const patch = async (id: string, data: Partial<Note>) => {
@@ -59,7 +68,7 @@ export function NotesClient({ initial }: { initial: Note[] }) {
           <div className="text-[11px] uppercase tracking-widest text-white/40">Second brain</div>
           <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">Notes</h1>
         </div>
-        <button onClick={create} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-brand-500 to-accent px-3 py-2 text-sm text-white shadow-lg shadow-brand-500/25"><Plus className="h-4 w-4" /> New note</button>
+        <button onClick={create} disabled={creating} aria-busy={creating} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-brand-500 to-accent px-3 py-2 text-sm text-white shadow-lg shadow-brand-500/25 disabled:cursor-not-allowed disabled:opacity-60"><Plus className={`h-4 w-4 ${creating ? "animate-spin" : ""}`} /> {creating ? "Creating…" : "New note"}</button>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
