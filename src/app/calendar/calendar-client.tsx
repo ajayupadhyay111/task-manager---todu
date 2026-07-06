@@ -170,8 +170,9 @@ function DayView({ cursor, items }: { cursor: Date; items: (Item & { _d: Date })
 }
 
 function AgendaView({ items }: { items: (Item & { _d: Date })[] }) {
+  type Row = Item & { _d: Date };
   const sorted = [...items].sort((a, b) => a._d.getTime() - b._d.getTime());
-  const groups = new Map<string, (Item & { _d: Date })[]>();
+  const groups = new Map<string, Row[]>();
   for (const it of sorted) {
     const k = it._d.toDateString();
     if (!groups.has(k)) groups.set(k, []);
@@ -179,14 +180,14 @@ function AgendaView({ items }: { items: (Item & { _d: Date })[] }) {
   }
   return (
     <div className="space-y-3">
-      {Array.from(groups.entries()).map(([day, list]) => (
+      {Array.from(groups.entries()).map(([day, list]: [string, Row[]]) => (
         <Card key={day}><CardBody>
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
             <CalendarDays className="h-4 w-4 text-brand-400" />
             {new Date(day).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </div>
           <div className="space-y-1.5">
-            {list.map(t => (
+            {list.map((t: Row) => (
               <div key={t.id} className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-sm">
                 <span className="w-14 shrink-0 text-[11px] text-white/40">{t.dueTime ?? ""}</span>
                 <span className="flex-1 truncate">{t.title}</span>

@@ -25,7 +25,8 @@ export default async function UpcomingPage() {
     orderBy: { dueDate: "asc" },
   });
 
-  const groups = new Map<string, typeof tasks>();
+  type TaskItem = (typeof tasks)[number];
+  const groups = new Map<string, TaskItem[]>();
   for (const t of tasks) {
     const d = new Date(t.dueDate!);
     const key = d.toDateString();
@@ -43,14 +44,14 @@ export default async function UpcomingPage() {
 
       {tasks.length === 0 ? (
         <EmptyState icon={<CalendarClock className="h-6 w-6" />} title="Nothing upcoming" description="Add a due date to any task to see it here." />
-      ) : Array.from(groups.entries()).map(([day, list]) => (
+      ) : Array.from(groups.entries()).map(([day, list]: [string, TaskItem[]]) => (
         <Card key={day}>
           <CardHeader>
             <CardTitle>{new Date(day).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</CardTitle>
             <span className="text-[11px] text-white/40">{list.length}</span>
           </CardHeader>
           <CardBody className="space-y-1.5">
-            {list.map(t => <TaskRow key={t.id} task={t} />)}
+            {list.map((t: TaskItem) => <TaskRow key={t.id} task={t} />)}
           </CardBody>
         </Card>
       ))}

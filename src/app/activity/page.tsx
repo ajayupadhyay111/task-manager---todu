@@ -21,7 +21,8 @@ const ICONS: Record<string, React.ReactNode> = {
 
 export default async function ActivityPage() {
   const items = await db.activity.findMany({ orderBy: { createdAt: "desc" }, take: 300 });
-  const groups = new Map<string, typeof items>();
+  type Item = (typeof items)[number];
+  const groups = new Map<string, Item[]>();
   for (const it of items) {
     const key = new Date(it.createdAt).toDateString();
     if (!groups.has(key)) groups.set(key, []);
@@ -37,12 +38,12 @@ export default async function ActivityPage() {
 
       {items.length === 0 ? (
         <EmptyState icon={<ActIcon className="h-6 w-6" />} title="Nothing here yet" description="As you work, actions will appear here." />
-      ) : Array.from(groups.entries()).map(([day, list]) => (
+      ) : Array.from(groups.entries()).map(([day, list]: [string, Item[]]) => (
         <Card key={day}>
           <CardHeader><CardTitle>{new Date(day).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</CardTitle><span className="text-[11px] text-white/40">{list.length}</span></CardHeader>
           <CardBody>
             <ol className="relative space-y-3 border-l border-white/[0.06] pl-4">
-              {list.map(it => (
+              {list.map((it: Item) => (
                 <li key={it.id} className="relative">
                   <span className="absolute -left-[21px] top-1 grid h-4 w-4 place-items-center rounded-full bg-[#14161d] ring-1 ring-white/[0.08]">
                     {ICONS[it.kind] ?? <Circle className="h-3 w-3 text-white/50" />}
