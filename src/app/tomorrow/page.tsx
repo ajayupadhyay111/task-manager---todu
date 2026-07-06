@@ -17,29 +17,29 @@ export default async function TomorrowPage() {
   const startOfTomorrow = new Date(startOfToday); startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
   const endOfTomorrow = new Date(startOfTomorrow); endOfTomorrow.setDate(endOfTomorrow.getDate() + 1);
 
-  const [candidates, carryForward] = await Promise.all([
-    db.task.findMany({
-      where: {
-        status: { notIn: ["completed", "archived"] },
-        OR: [
-          { status: "tomorrow" }, { status: "planned" }, { status: "inbox" },
-          { scheduledFor: { gte: startOfTomorrow, lt: endOfTomorrow } },
-          { dueDate: { gte: startOfTomorrow, lt: endOfTomorrow } },
-        ],
-      },
-      include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
-      orderBy: [{ priority: "asc" }],
-      take: 30,
-    }),
-    db.task.findMany({
-      where: {
-        status: { notIn: ["completed", "archived"] },
-        dueDate: { lt: startOfToday },
-      },
-      include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
-      take: 10,
-    }),
-  ]);
+  const candidatesP = db.task.findMany({
+    where: {
+      status: { notIn: ["completed", "archived"] },
+      OR: [
+        { status: "tomorrow" }, { status: "planned" }, { status: "inbox" },
+        { scheduledFor: { gte: startOfTomorrow, lt: endOfTomorrow } },
+        { dueDate: { gte: startOfTomorrow, lt: endOfTomorrow } },
+      ],
+    },
+    include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
+    orderBy: [{ priority: "asc" }],
+    take: 30,
+  });
+  const carryForwardP = db.task.findMany({
+    where: {
+      status: { notIn: ["completed", "archived"] },
+      dueDate: { lt: startOfToday },
+    },
+    include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
+    take: 10,
+  });
+  const candidates = await candidatesP;
+  const carryForward = await carryForwardP;
 
   const quote = QUOTES[startOfTomorrow.getDate() % QUOTES.length];
   return (

@@ -10,18 +10,21 @@ export async function GET() {
   const weekStart = new Date(startOfToday); weekStart.setDate(weekStart.getDate() - startOfToday.getDay());
   const days30 = new Date(startOfToday); days30.setDate(days30.getDate() - 30);
 
-  const [
-    dueToday, overdue, completedToday, completedThisWeek,
-    completedLast30, allActive, focusSum,
-  ] = await Promise.all([
-    db.task.count({ where: { dueDate: { gte: startOfToday, lt: endOfToday }, status: { notIn: ["completed", "archived"] } } }),
-    db.task.count({ where: { dueDate: { lt: startOfToday }, status: { notIn: ["completed", "archived"] } } }),
-    db.task.count({ where: { completedAt: { gte: startOfToday, lt: endOfToday } } }),
-    db.task.count({ where: { completedAt: { gte: weekStart } } }),
-    db.task.findMany({ where: { completedAt: { gte: days30 } }, select: { completedAt: true } }),
-    db.task.count({ where: { status: { notIn: ["completed", "archived"] } } }),
-    db.focusSession.aggregate({ _sum: { minutes: true }, where: { startedAt: { gte: weekStart } } }),
-  ]);
+  const dueTodayP = db.task.count({ where: { dueDate: { gte: startOfToday, lt: endOfToday }, status: { notIn: ["completed", "archived"] } } });
+  const overdueP = db.task.count({ where: { dueDate: { lt: startOfToday }, status: { notIn: ["completed", "archived"] } } });
+  const completedTodayP = db.task.count({ where: { completedAt: { gte: startOfToday, lt: endOfToday } } });
+  const completedThisWeekP = db.task.count({ where: { completedAt: { gte: weekStart } } });
+  const completedLast30P = db.task.findMany({ where: { completedAt: { gte: days30 } }, select: { completedAt: true } });
+  const allActiveP = db.task.count({ where: { status: { notIn: ["completed", "archived"] } } });
+  const focusSumP = db.focusSession.aggregate({ _sum: { minutes: true }, where: { startedAt: { gte: weekStart } } });
+
+  const dueToday = await dueTodayP;
+  const overdue = await overdueP;
+  const completedToday = await completedTodayP;
+  const completedThisWeek = await completedThisWeekP;
+  const completedLast30 = await completedLast30P;
+  const allActive = await allActiveP;
+  const focusSum = await focusSumP;
 
   const byDay: { day: string; count: number }[] = [];
   const map = new Map<string, number>();

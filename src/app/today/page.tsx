@@ -9,31 +9,31 @@ export default async function TodayPage() {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const end = new Date(start); end.setDate(end.getDate() + 1);
 
-  const [tasks, completed] = await Promise.all([
-    db.task.findMany({
-      where: {
-        status: { notIn: ["completed", "archived"] },
-        OR: [
-          { status: "today" }, { status: "in_progress" },
-          { scheduledFor: { gte: start, lt: end } },
-          { dueDate: { gte: start, lt: end } },
-        ],
-      },
-      include: {
-        client: { select: { id: true, name: true, color: true } },
-        project: { select: { id: true, name: true, color: true } },
-      },
-      orderBy: [{ scheduledFor: "asc" }, { dueTime: "asc" }, { priority: "asc" }],
-    }),
-    db.task.findMany({
-      where: { completedAt: { gte: start, lt: end } },
-      include: {
-        client: { select: { id: true, name: true, color: true } },
-        project: { select: { id: true, name: true, color: true } },
-      },
-      orderBy: { completedAt: "desc" },
-    }),
-  ]);
+  const tasksP = db.task.findMany({
+    where: {
+      status: { notIn: ["completed", "archived"] },
+      OR: [
+        { status: "today" }, { status: "in_progress" },
+        { scheduledFor: { gte: start, lt: end } },
+        { dueDate: { gte: start, lt: end } },
+      ],
+    },
+    include: {
+      client: { select: { id: true, name: true, color: true } },
+      project: { select: { id: true, name: true, color: true } },
+    },
+    orderBy: [{ scheduledFor: "asc" }, { dueTime: "asc" }, { priority: "asc" }],
+  });
+  const completedP = db.task.findMany({
+    where: { completedAt: { gte: start, lt: end } },
+    include: {
+      client: { select: { id: true, name: true, color: true } },
+      project: { select: { id: true, name: true, color: true } },
+    },
+    orderBy: { completedAt: "desc" },
+  });
+  const tasks = await tasksP;
+  const completed = await completedP;
 
   const total = tasks.length + completed.length;
   const pct = total === 0 ? 0 : Math.round((completed.length / total) * 100);

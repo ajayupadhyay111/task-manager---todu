@@ -20,41 +20,53 @@ async function getData() {
   const days30 = new Date(startOfToday); days30.setDate(days30.getDate() - 30);
   const weekStart = new Date(startOfToday); weekStart.setDate(weekStart.getDate() - startOfToday.getDay());
 
-  const [today, overdue, upcoming, activity, activeTasksCount, completedToday, completedThisWeek, focusMin, completed30, clients, projects, pinned, sticky] = await Promise.all([
-    db.task.findMany({
-      where: {
-        status: { notIn: ["completed", "archived"] },
-        OR: [
-          { status: "today" }, { status: "in_progress" },
-          { scheduledFor: { gte: startOfToday, lt: endOfToday } },
-          { dueDate: { gte: startOfToday, lt: endOfToday } },
-        ],
-      },
-      include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } }, _count: { select: { subtasks: true, checklist: true, comments: true } } },
-      orderBy: [{ pinned: "desc" }, { priority: "asc" }],
-      take: 8,
-    }),
-    db.task.findMany({
-      where: { status: { notIn: ["completed", "archived"] }, dueDate: { lt: startOfToday } },
-      include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
-      orderBy: [{ dueDate: "asc" }], take: 5,
-    }),
-    db.task.findMany({
-      where: { status: { notIn: ["completed", "archived"] }, dueDate: { gte: endOfTomorrow, lt: weekAhead } },
-      include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
-      orderBy: [{ dueDate: "asc" }], take: 6,
-    }),
-    db.activity.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
-    db.task.count({ where: { status: { notIn: ["completed", "archived"] } } }),
-    db.task.count({ where: { completedAt: { gte: startOfToday, lt: endOfToday } } }),
-    db.task.count({ where: { completedAt: { gte: weekStart } } }),
-    db.focusSession.aggregate({ _sum: { minutes: true }, where: { startedAt: { gte: weekStart } } }),
-    db.task.findMany({ where: { completedAt: { gte: days30 } }, select: { completedAt: true } }),
-    db.client.findMany({ include: { _count: { select: { tasks: true, projects: true } } }, orderBy: { updatedAt: "desc" }, take: 5 }),
-    db.project.findMany({ include: { client: { select: { name: true, color: true } } }, orderBy: { updatedAt: "desc" }, take: 5 }),
-    db.task.findMany({ where: { pinned: true, status: { notIn: ["completed", "archived"] } }, take: 6 }),
-    db.note.findMany({ where: { kind: "sticky" }, orderBy: { updatedAt: "desc" }, take: 4 }),
-  ]);
+  const todayP = db.task.findMany({
+    where: {
+      status: { notIn: ["completed", "archived"] },
+      OR: [
+        { status: "today" }, { status: "in_progress" },
+        { scheduledFor: { gte: startOfToday, lt: endOfToday } },
+        { dueDate: { gte: startOfToday, lt: endOfToday } },
+      ],
+    },
+    include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } }, _count: { select: { subtasks: true, checklist: true, comments: true } } },
+    orderBy: [{ pinned: "desc" }, { priority: "asc" }],
+    take: 8,
+  });
+  const overdueP = db.task.findMany({
+    where: { status: { notIn: ["completed", "archived"] }, dueDate: { lt: startOfToday } },
+    include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
+    orderBy: [{ dueDate: "asc" }], take: 5,
+  });
+  const upcomingP = db.task.findMany({
+    where: { status: { notIn: ["completed", "archived"] }, dueDate: { gte: endOfTomorrow, lt: weekAhead } },
+    include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } },
+    orderBy: [{ dueDate: "asc" }], take: 6,
+  });
+  const activityP = db.activity.findMany({ orderBy: { createdAt: "desc" }, take: 8 });
+  const activeTasksCountP = db.task.count({ where: { status: { notIn: ["completed", "archived"] } } });
+  const completedTodayP = db.task.count({ where: { completedAt: { gte: startOfToday, lt: endOfToday } } });
+  const completedThisWeekP = db.task.count({ where: { completedAt: { gte: weekStart } } });
+  const focusMinP = db.focusSession.aggregate({ _sum: { minutes: true }, where: { startedAt: { gte: weekStart } } });
+  const completed30P = db.task.findMany({ where: { completedAt: { gte: days30 } }, select: { completedAt: true } });
+  const clientsP = db.client.findMany({ include: { _count: { select: { tasks: true, projects: true } } }, orderBy: { updatedAt: "desc" }, take: 5 });
+  const projectsP = db.project.findMany({ include: { client: { select: { name: true, color: true } } }, orderBy: { updatedAt: "desc" }, take: 5 });
+  const pinnedP = db.task.findMany({ where: { pinned: true, status: { notIn: ["completed", "archived"] } }, take: 6 });
+  const stickyP = db.note.findMany({ where: { kind: "sticky" }, orderBy: { updatedAt: "desc" }, take: 4 });
+
+  const today = await todayP;
+  const overdue = await overdueP;
+  const upcoming = await upcomingP;
+  const activity = await activityP;
+  const activeTasksCount = await activeTasksCountP;
+  const completedToday = await completedTodayP;
+  const completedThisWeek = await completedThisWeekP;
+  const focusMin = await focusMinP;
+  const completed30 = await completed30P;
+  const clients = await clientsP;
+  const projects = await projectsP;
+  const pinned = await pinnedP;
+  const sticky = await stickyP;
 
   // 30-day chart
   const map = new Map<string, number>();

@@ -7,10 +7,9 @@ import { TaskRow } from "@/components/task/task-row";
 export const dynamic = "force-dynamic";
 
 export default async function ArchivePage() {
-  const [archivedTasks, completedTasks] = await Promise.all([
-    db.task.findMany({ where: { status: "archived" }, include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } }, orderBy: { updatedAt: "desc" }, take: 100 }),
-    db.task.findMany({ where: { status: "completed" }, include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } }, orderBy: { completedAt: "desc" }, take: 100 }),
-  ]);
+  const archivedTasks = await db.task.findMany({ where: { status: "archived" }, include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } }, orderBy: { updatedAt: "desc" }, take: 100 });
+  const completedTasks = await db.task.findMany({ where: { status: "completed" }, include: { client: { select: { id: true, name: true, color: true } }, project: { select: { id: true, name: true, color: true } } }, orderBy: { completedAt: "desc" }, take: 100 });
+  type Row = (typeof completedTasks)[number];
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
@@ -27,7 +26,7 @@ export default async function ArchivePage() {
         <Card>
           <CardHeader><CardTitle>Completed</CardTitle><span className="text-[11px] text-white/40">{completedTasks.length}</span></CardHeader>
           <CardBody className="space-y-1.5">
-            {completedTasks.map(t => <TaskRow key={t.id} task={t} compact />)}
+            {completedTasks.map((t: Row) => <TaskRow key={t.id} task={t} compact />)}
           </CardBody>
         </Card>
       )}
@@ -35,7 +34,7 @@ export default async function ArchivePage() {
         <Card>
           <CardHeader><CardTitle>Archived</CardTitle><span className="text-[11px] text-white/40">{archivedTasks.length}</span></CardHeader>
           <CardBody className="space-y-1.5">
-            {archivedTasks.map(t => <TaskRow key={t.id} task={t} compact />)}
+            {archivedTasks.map((t: Row) => <TaskRow key={t.id} task={t} compact />)}
           </CardBody>
         </Card>
       )}
