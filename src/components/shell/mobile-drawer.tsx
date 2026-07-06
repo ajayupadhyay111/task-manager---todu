@@ -13,7 +13,7 @@ export function MobileDrawer({ open }: { open: boolean }) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md lg:hidden"
+            className="fixed inset-0 z-50 bg-black/70 lg:hidden"
           />
           <motion.aside
             initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}

@@ -23,7 +23,7 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
               <Dialog.Overlay asChild>
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+                  className="fixed inset-0 z-50 bg-black/70"
                 />
               </Dialog.Overlay>
               <Dialog.Content asChild>
@@ -35,7 +35,7 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
                   className="pb-safe fixed inset-x-3 top-[8%] z-50 mx-auto w-auto max-w-[560px] sm:inset-x-auto sm:left-1/2 sm:top-[12%] sm:w-[92vw] sm:-translate-x-1/2"
                 >
                   <div className="glass-strong card-shadow max-h-[85vh] overflow-y-auto rounded-2xl">
-                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.05] bg-[rgba(20,22,29,0.85)] px-4 py-3 backdrop-blur-xl">
+                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.05] bg-[#1A1D26] px-4 py-3">
                       <Dialog.Title className="text-sm font-semibold capitalize">New {kind}</Dialog.Title>
                       <Dialog.Close asChild>
                         <button className="rounded-lg p-1.5 text-white/50 hover:bg-white/[0.05] hover:text-white" aria-label="Close">

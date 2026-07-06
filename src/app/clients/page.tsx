@@ -42,11 +42,11 @@ export default async function ClientsPage() {
                       </div>
                     </div>
                     <div className="absolute right-4 top-4 flex gap-1">
-                      <Badge className="border-white/10 bg-black/30 backdrop-blur-md">{c.priority}</Badge>
+                      <Badge className="border-white/10 bg-black/50">{c.priority}</Badge>
                       <Badge className={
                         c.paymentStatus === "paid" ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
                         : c.paymentStatus === "overdue" ? "border-red-400/30 bg-red-500/10 text-red-200"
-                        : "border-white/10 bg-black/30 backdrop-blur-md"
+                        : "border-white/10 bg-black/50"
                       }>
                         <Circle className="h-2 w-2 fill-current" />
                         {c.paymentStatus}

@@ -114,7 +114,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
               <CardHeader><CardTitle>Related notes</CardTitle></CardHeader>
               <CardBody className="space-y-2">
                 {p.projectNotes.map((n: NoteItem) => (
-                  <Link key={n.id} href={`/notes/${n.id}`} className="block rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-sm">
+                  <Link key={n.id} href={`/notes?id=${n.id}`} className="block rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-sm">
                     <div className="truncate font-medium">{n.title}</div>
                     <div className="text-[11px] text-white/40">{fmtRelative(n.updatedAt)}</div>
                   </Link>

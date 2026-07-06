@@ -46,7 +46,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
             <Dialog.Portal forceMount>
               <Dialog.Overlay asChild>
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md" />
+                  className="fixed inset-0 z-50 bg-black/70" />
               </Dialog.Overlay>
               <Dialog.Content asChild>
                 <motion.div
@@ -122,7 +122,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                           {results.notes.length > 0 && (
                             <Group heading="Notes">
                               {results.notes.map(n => (
-                                <Item key={n.id} onSelect={() => go(`/notes/${n.id}`)} icon={<NotebookPen className="h-4 w-4" />} label={n.title} />
+                                <Item key={n.id} onSelect={() => go(`/notes?id=${n.id}`)} icon={<NotebookPen className="h-4 w-4" />} label={n.title} />
                               ))}
                             </Group>
                           )}

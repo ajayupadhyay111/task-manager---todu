@@ -1,5 +1,5 @@
 // Todu service worker — minimal offline shell
-const CACHE = "todu-v1";
+const CACHE = "todu-v2";
 const CORE = ["/", "/today", "/inbox", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (e) => {

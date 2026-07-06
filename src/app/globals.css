@@ -80,17 +80,14 @@ body {
 
 ::selection { background: rgba(79,124,255,0.35); color: #fff; }
 
+/* Solid surfaces (glassmorphism removed by request) */
 .glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.06);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.07);
 }
 .glass-strong {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  background: var(--color-surface-2);
+  border: 1px solid rgba(255,255,255,0.09);
 }
 
 .card-shadow {

@@ -19,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-[rgba(10,11,15,0.85)] backdrop-blur-2xl lg:hidden"
+      className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-[#0C0D12] lg:hidden"
       aria-label="Primary"
     >
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5">
